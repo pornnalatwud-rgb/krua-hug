@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Krua Hug – Host &amp; Guest app</title>
+<style>
+:root{--bg:#f6f1e3;--card:#fff;--ink:#1f2a1c;--mut:#5d6858;--g:#2f6b3a;--r:#c8321f;--y:#e9a820;--ln:#ddd3b6;--og:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a12;--card:#1d2619;--ink:#f1ecda;--mut:#a9b3a2;--g:#7cc58a;--r:#ff7a63;--y:#f0b93a;--ln:#2f3b2a;--og:#10200f}}
+:root[data-theme="dark"]{--bg:#141a12;--card:#1d2619;--ink:#f1ecda;--mut:#a9b3a2;--g:#7cc58a;--r:#ff7a63;--y:#f0b93a;--ln:#2f3b2a;--og:#10200f}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Noto Sans Thai",sans-serif}
+#app{max-width:440px;margin:0 auto;min-height:100vh;padding:18px 18px 40px}
+h1,h2,h3{margin:0}h1{font-size:30px}h2{font-size:22px;margin-bottom:12px}h3{font-size:17px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.back{border:0;background:var(--card);border:1px solid var(--ln);color:var(--ink);border-radius:10px;width:38px;height:38px;font-size:18px;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:14px;font:700 16px inherit;font-family:inherit;background:var(--g);color:var(--og);cursor:pointer;margin-top:14px}
+.btn.red{background:var(--r);color:#fff}.btn.o{background:transparent;color:var(--ink);border:2px solid var(--ln)}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input,select,textarea{width:100%;padding:11px;border-radius:10px;border:2px solid var(--ln);background:var(--card);color:var(--ink);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--card);border:2px solid var(--g);border-radius:14px;padding:18px 10px;min-height:92px;text-align:center;font-weight:700;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:inherit;font-size:15px}
+.tile.w{grid-column:1/-1}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px;margin-bottom:12px}
+.pic{height:110px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;margin-bottom:10px;background:var(--g)}
+.map{height:150px;border:2px dashed var(--ln);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--mut);background:repeating-linear-gradient(45deg,transparent 0 12px,var(--ln) 12px 13px)}
+.mut{color:var(--mut);font-size:14px}.big{font-size:34px;font-weight:800}
+.chk{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:6px 0;border-radius:10px;background:var(--card);border:1px solid var(--ln)}
+.chk input{width:20px;height:20px}
+.pill{display:inline-block;border:2px solid var(--ln);border-radius:99px;padding:6px 14px;background:var(--card);color:var(--ink);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.sp{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ok{color:var(--g);font-weight:800}.err{color:var(--r);font-size:14px;margin-top:8px}
+.hs{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}.hs .card{min-width:220px}
+</style></head><body><div id="app"></div>
+<script>
+var S={role:null,user:null,interest:[],sel:null,notice:"",filter:"",search:"",loc:"Bangkok",hist:[],
+ sessions:[
+ {id:1,name:"Pad Thai street wok",desc:"Learn the wok skills behind a great Pad Thai at a Bangkok home kitchen.",cat:"Central",loc:"Bangkok",price:1100,max:10,date:"2026-11-02",lang:"English, Thai",menu:"Pad Thai, Mango salad",rem:"Contains peanuts, shrimp",guests:["John","Andrew","Lisa"],host:"Nok",rate:4.8,c:"#c8321f"},
+ {id:2,name:"Khao Soi from scratch",desc:"Make the paste, simmer the curry and fry the crispy noodles.",cat:"Northern",loc:"Chiang Mai",price:1300,max:8,date:"2026-11-05",lang:"English",menu:"Khao Soi, Sai Oua",rem:"Vegetarian option",guests:["Mei"],host:"Mae Lek",rate:4.6,c:"#e08a10"},
+ {id:3,name:"Isaan salads & grill",desc:"Pound som tam, mix larb and grill chicken over charcoal.",cat:"North Eastern",loc:"Khon Kaen",price:900,max:8,date:"2026-11-09",lang:"English, Thai",menu:"Som Tam, Larb, Gai Yang",rem:"Very spicy by default",guests:[],host:"Pa Noi",rate:4.4,c:"#a85a1c"}],
+ CUIS:["Central Thai Cuisine","Northern Thai Cuisine","North Eastern Thai Cuisine","Southern Thai Cuisine","Royal Thai Cuisine","Fusion Thai Cuisine"]};
+var $=function(s){return document.querySelector(s)};
+function v(id){var e=document.getElementById(id);return e?e.value.trim():""}
+function fld(id,l,t,x){return '<label for="'+id+'">'+l+'</label><input id="'+id+'" type="'+(t||"text")+'" '+(x||"")+'>'}
+function top(t,back){return '<div class="top">'+(back?'<button class="back" data-go="'+back+'" aria-label="Back">←</button>':'')+'<h2 style="margin:0">'+t+'</h2></div>'}
+function interest(){return S.CUIS.map(function(c,i){return '<label class="chk"><input type="checkbox" class="ci" value="'+c+'"> '+c+'</label>'}).join("")}
+function mapBox(){return '<div class="map">Map – tap to pin location</div>'}
+function addr(){return '<label for="ad">Address</label><input id="ad"><div class="row"><div>'+fld("pv","Province")+'</div><div>'+fld("di","District")+'</div><div>'+fld("sd","Sub-district")+'</div><div>'+fld("pc","Postal code")+'</div></div>'}
+function cost(s,a,k){return s.price*a+Math.round(s.price*0.5)*k}
+var R={
+welcome:function(){return '<div style="text-align:center;padding-top:70px"><h1>Welcome</h1><p class="mut">Cook Thai food with local hosts.</p><button class="btn" data-act="role" data-v="host">Host</button><button class="btn red" data-act="role" data-v="guest">Guest</button></div>'},
+login:function(){return top("Welcome "+S.role,"welcome")+'<h3>Log in</h3>'+fld("un","Username")+fld("pw","Password","password")+'<div class="err" id="er"></div><button class="btn" data-act="login">Log in</button><p class="mut">You don\'t have an account? <button class="pill" data-go="signup">Sign up</button></p>'},
+signup:function(){var h=S.role==="host";return top("Welcome "+S.role+" – Sign up","login")+fld("un","Username")+fld("pw","Password","password")+fld("bk","Bank account")+fld("nm","Name")+fld("sn","Surname")+fld("ag","Age","number")+fld("gd","Gender")+
+ (h?fld("idn","ID number")+fld("em","Email","email")+fld("adr","Address"):'<label for="idt">Select identification</label><select id="idt"><option>Passport</option><option>ID card</option><option>Driver license</option></select><label for="up">Document upload</label><input id="up" type="file">'+fld("nat","Nationality")+fld("alg","Restrictions / allergies"))+'<div class="err" id="er"></div><button class="btn" data-act="signup">Start</button>'},
+interest:function(){var h=S.role==="host";return top("Select interest","signup")+interest()+fld("dish",h?"Signature dish":"Favorite dish")+'<button class="btn" data-act="interest">Next</button>'},
+location:function(){return top(S.role==="host"?"Location":"Select location","interest")+mapBox()+'<button class="btn o" data-act="gps">Use my current location</button>'+addr()+'<button class="btn" data-act="location">'+(S.role==="host"?"Save location":"Search")+'</button>'},
+/* host */
+hprofile:function(){return top("Host profile")+'<p class="mut">Hello, '+S.user.un+'</p><div class="tiles"><button class="tile" data-go="edit">Edit information</button><button class="tile" data-go="bank">Bank account</button><button class="tile" data-go="dash">Finance data</button><button class="tile" data-go="hhist">History</button><button class="tile" data-go="cur">Current session<br>+ create</button><button class="tile" data-go="help">Help center</button></div><button class="btn o" data-act="logout">Log out</button>'},
+dash:function(){var mine=S.sessions.filter(function(x){return x.host===S.user.un||x.host==="Nok"});var rev=mine.reduce(function(a,x){return a+x.price*x.guests.length},0);return top("Finance data","hprofile")+'<div class="row"><div class="card"><div class="mut">Sessions</div><div class="big">'+mine.length+'</div></div><div class="card"><div class="mut">Coming sessions</div><div class="big">'+mine.filter(function(x){return x.date>="2026-10-16"}).length+'</div></div></div><div class="card"><div class="mut">Total revenue</div><div class="big">฿'+rev.toLocaleString()+'</div></div><div class="card"><div class="mut">Days registered</div><div class="big">365</div></div><div class="card"><div class="sp"><span class="mut">Reviews</span><span class="mut">view all ›</span></div><div class="big">4.6 / 5 ★</div></div>'},
+cur:function(){return top("Current sessions","hprofile")+S.sessions.map(function(x){return '<button class="tile w" style="min-height:0;text-align:left;align-items:flex-start" data-go="curd" data-id="'+x.id+'"><b>'+x.name+'</b><span class="mut">'+x.date+' · '+x.guests.length+'/'+x.max+' guests</span></button>'}).join('<div style="height:10px"></div>')+'<button class="btn red" data-go="create">+ Create session</button>'},
+curd:function(){var x=S.sel;return top("Session: "+x.name,"cur")+'<div class="pic" style="background:'+x.c+'">'+x.cat+'</div><p class="mut">Date '+x.date+'</p><p>'+x.desc+'</p><div class="card"><div class="sp"><b>Guests</b><b>'+x.guests.length+'/'+x.max+'</b></div>'+(x.guests.length?x.guests.map(function(g){return '<div class="sp" style="padding:8px 0;border-top:1px solid var(--ln)"><span>'+g+'</span><span class="ok">✓</span></div>'}).join(""):'<p class="mut">No guests yet.</p>')+'</div>'},
+create:function(){return top("Create session","cur")+'<div class="map" style="height:90px">+ Add picture</div>'+fld("sn","Name")+'<label for="sd">Description</label><textarea id="sd" rows="3"></textarea>'+fld("sm","Menu")+'<label for="sc">Category</label><select id="sc">'+["Central","Northern","North Eastern","Southern","Royal","Fusion"].map(function(c){return "<option>"+c+"</option>"}).join("")+'</select>'+fld("sl","Location")+fld("sr","Remarks / restrictions / allergies")+fld("ss","Seasonality")+'<div class="row"><div>'+fld("sp","Total price (฿)","number")+'</div><div>'+fld("sx","People per session","number",'value="8"')+'</div></div>'+fld("sdt","Date","date")+fld("sg","Language")+'<div class="err" id="er"></div><button class="btn" data-act="create">Create</button>'},
+hhist:function(){return top("History","hprofile")+'<p class="mut">Past sessions will appear here.</p>'},
+/* guest */
+home:function(){var q=S.search.toLowerCase();var l=S.sessions.filter(function(x){return (!S.filter||x.cat===S.filter)&&(!q||(x.name+x.menu+x.loc).toLowerCase().indexOf(q)>-1)});function c(x){return '<div class="card" tabindex="0" data-go="detail" data-id="'+x.id+'" style="cursor:pointer"><div class="pic" style="background:'+x.c+'">'+x.cat+'</div><div class="sp"><h3>'+x.name+'</h3><span>★ '+x.rate+'</span></div><div class="mut">'+x.loc+' · '+x.date+' · ฿'+x.price.toLocaleString()+'</div></div>'}
+ return '<div class="sp"><select id="lc" aria-label="Location" style="width:auto">'+["Bangkok","Chiang Mai","Khon Kaen","Phuket"].map(function(c){return '<option'+(c===S.loc?' selected':'')+'>'+c+'</option>'}).join("")+'</select><button class="pill" data-go="gprofile">Profile</button></div><div class="sp" style="margin:12px 0"><input id="q" placeholder="Search" value="'+S.search+'"><select id="fl" aria-label="Filters" style="width:auto"><option value="">Filters</option>'+["Central","Northern","North Eastern","Southern","Royal","Fusion"].map(function(c){return '<option'+(c===S.filter?' selected':'')+'>'+c+'</option>'}).join("")+'</select></div><h3>Recommend sessions</h3><div class="hs" style="margin:8px 0 16px">'+l.slice(0,3).map(c).join("")+'</div><h3>Near you</h3><div style="margin-top:8px">'+(l.filter(function(x){return x.loc===S.loc}).map(c).join("")||'<p class="mut">No sessions in '+S.loc+' yet. Try another location.</p>')+'</div>'},
+detail:function(){var x=S.sel;return top("Session","home")+'<div class="pic" style="background:'+x.c+'">'+x.cat+'</div><div class="sp"><h2 style="margin:0">'+x.name+'</h2><div class="card" style="margin:0;padding:8px">Host '+x.host+'<br>★ '+x.rate+' / 5</div></div><p>'+x.desc+'</p><p class="mut">Category: '+x.cat+'<br>Location: '+x.loc+'<br>Price: ฿'+x.price.toLocaleString()+' per adult<br>People per session: '+x.guests.length+' / '+x.max+'<br>Language: '+x.lang+'<br>Menu: '+x.menu+'<br>Restrictions / allergies: '+x.rem+'<br>Date: '+x.date+'</p><button class="btn red" data-go="pay">Book</button>'},
+pay:function(){var x=S.sel;return top("Payment option","detail")+['Thai QR','Credit card / Debit card','WeChat / Alipay','Apple Pay'].map(function(p,i){return '<label class="chk"><input type="radio" name="pm" value="'+p+'"'+(i?'':' checked')+'> '+p+'</label>'}).join("")+fld("ba","Billing address")+'<div class="row"><div>'+fld("ad","Adult","number",'min="1" max="'+(x.max-x.guests.length)+'" value="1"')+'</div><div>'+fld("kd","Kids (0–12)","number",'min="0" value="0"')+'</div></div><p class="sp"><b>Total price</b><b class="big" style="font-size:24px" id="tt">฿'+x.price.toLocaleString()+'</b></p><div class="err" id="er"></div><button class="btn" data-act="pay">Pay</button>'},
+done:function(){return '<div style="text-align:center;padding-top:80px"><div class="big ok">✓</div><h2>Booked</h2><p class="mut">'+S.notice+'</p><button class="btn" data-go="home">Back to sessions</button></div>'},
+gprofile:function(){return top("Guest profile","home")+'<div class="tiles"><div class="tile">'+S.user.un+'</div><button class="tile" data-go="pay2">Payment channel</button><button class="tile" data-go="ghist">History</button><button class="tile" data-go="ghist">Booking</button><button class="tile" data-go="home">Bookmark</button><button class="tile" data-go="help">Help center</button></div><button class="btn o" data-act="logout">Log out</button>'},
+pay2:function(){return top("Payment channel","gprofile")+'<p class="mut">Thai QR, cards, WeChat/Alipay and Apple Pay are supported.</p>'},
+ghist:function(){return top("Bookings","gprofile")+(S.hist.length?S.hist.map(function(h){return '<div class="card"><b>'+h.n+'</b><div class="mut">'+h.d+' · ฿'+h.t.toLocaleString()+' · '+h.p+'</div></div>'}).join(""):'<p class="mut">No bookings yet. Find a class on the home screen.</p>')},
+help:function(){return top("Help center",S.role==="host"?"hprofile":"gprofile")+'<div class="card"><b>Contact</b><p class="mut">help@kruahug.example</p></div>'},
+edit:function(){return top("Edit information","hprofile")+fld("nm","Name")+fld("em","Email")+'<button class="btn" data-go="hprofile">Save</button>'},
+bank:function(){return top("Bank account","hprofile")+fld("bk","Account number")+'<button class="btn" data-go="hprofile">Save</button>'}
+};
+function go(n,id){if(id)S.sel=S.sessions.filter(function(x){return x.id==id})[0];S.screen=n;$("#app").innerHTML=R[n]();window.scrollTo(0,0);bind(n)}
+function bind(n){
+ if(n==="home"){var s=$("#q");if(s)s.onchange=function(){S.search=s.value;go("home")};$("#fl").onchange=function(){S.filter=this.value;go("home")};$("#lc").onchange=function(){S.loc=this.value;go("home")}}
+ if(n==="pay"){var u=function(){var a=+v("ad")||0,k=+v("kd")||0;$("#tt").textContent="฿"+cost(S.sel,a,k).toLocaleString()};$("#ad").oninput=u;$("#kd").oninput=u}}
+document.addEventListener("click",function(e){var t=e.target.closest("[data-go],[data-act]");if(!t)return;
+ if(t.dataset.go)return go(t.dataset.go,t.dataset.id);
+ var a=t.dataset.act,er=function(m){$("#er").textContent=m};
+ if(a==="role"){S.role=t.dataset.v;go("login")}
+ if(a==="login"){if(!v("un")||!v("pw"))return er("Enter your username and password.");S.user={un:v("un")};go(S.role==="host"?"hprofile":"home")}
+ if(a==="signup"){if(!v("un")||!v("pw")||!v("nm"))return er("Username, password and name are required.");S.user={un:v("un")};go("interest")}
+ if(a==="interest"){S.interest=[].slice.call(document.querySelectorAll(".ci:checked")).map(function(c){return c.value});if(!S.interest.length){S.notice="";return go("location")}go("location")}
+ if(a==="gps"){t.textContent="Location found (demo)"}
+ if(a==="location"){go(S.role==="host"?"hprofile":"home")}
+ if(a==="create"){if(!v("sn")||!v("sp")||!v("sdt"))return er("Add a name, price and date.");S.sessions.unshift({id:Date.now(),name:v("sn"),desc:v("sd"),cat:v("sc"),loc:v("sl")||"Bangkok",price:+v("sp"),max:+v("sx")||8,date:v("sdt"),lang:v("sg"),menu:v("sm"),rem:v("sr")||"None",guests:[],host:S.user.un,rate:5,c:"#2f6b3a"});go("cur")}
+ if(a==="pay"){var x=S.sel,ad=+v("ad")||0,kd=+v("kd")||0;if(ad<1)return er("Add at least 1 adult.");if(x.guests.length+ad>x.max)return er("Only "+(x.max-x.guests.length)+" seats left.");
+  var pm=document.querySelector('input[name=pm]:checked').value,tot=cost(x,ad,kd);for(var i=0;i<ad;i++)x.guests.push(S.user.un);S.hist.push({n:x.name,d:x.date,t:tot,p:pm});S.notice=x.host+" will confirm your seat for "+x.date+". Paid ฿"+tot.toLocaleString()+" by "+pm+" (demo, no real charge).";go("done")}
+ if(a==="logout"){S.user=null;S.role=null;go("welcome")}});
+go("welcome");
+</script></body></html>
